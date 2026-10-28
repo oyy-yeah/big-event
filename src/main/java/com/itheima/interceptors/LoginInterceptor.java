@@ -1,8 +1,10 @@
 package com.itheima.interceptors;
 
 import com.itheima.utils.JwtUtil;
+import com.itheima.utils.ThreadLocalUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -29,6 +31,9 @@ public class LoginInterceptor implements HandlerInterceptor {
         // 4. 开始验证令牌
         try {
             Map<String, Object> claims = JwtUtil.parseToken(token);
+            //业务数据放到threadlocal中
+            ThreadLocalUtil.set(claims);
+
             // 解析成功，说明令牌合法且未过期
             return true; // 放行
         } catch (Exception e) {
@@ -37,5 +42,10 @@ public class LoginInterceptor implements HandlerInterceptor {
             response.setStatus(401);
             return false;
         }
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
+        ThreadLocalUtil.remove();
     }
 }
